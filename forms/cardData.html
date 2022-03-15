@@ -1,0 +1,37 @@
+<form role="form" name="form" xmlns="http://www.w3.org/1999/html">
+  <script cam-script type="text/form-script">
+    camForm.on('form-loaded', function() {
+        camForm.variableManager.fetchVariable('invoice');
+    });
+    camForm.on('variables-fetched', function() {
+        $scope.invoice = camForm.variableManager.variable('invoice').value;
+    });
+  </script>
+
+  <h1 style="color: rgb(255, 187, 0)">Payment Data</h1>
+
+  <label for="cardNumber">Digits of card</label>
+  <input
+    required
+    type="number"
+    cam-variable-name="cardNumber"
+    cam-variable-type="Double"
+    minlength="16"
+    class="form-control"
+    placeholder="8888-8888-8888-8888"
+  />
+  <p style="font-size: 16px; color: gray;">Must be 16 digits</p>
+  <hr />
+  <label for="cost" >Finally sum:</label>
+  <span
+    style="
+      width: 400px;
+      border-radius: 5px;
+      border: 1px solid gray;
+      font-size: 20px;
+      color: red;
+      padding: 10px;
+    "
+    >{{invoice}} $</span
+  >
+</form>

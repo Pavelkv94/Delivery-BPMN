@@ -1,0 +1,78 @@
+<form role="form" name="form">
+  <div class="form-group">
+    <div style="border: 2px solid green; padding: 10px; border-radius: 10px;">
+    <label for="coffee1">Choose first type of coffee:</label>
+    <select
+      required
+      cam-variable-name="coffee1"
+      cam-variable-type="String"
+      class="form-control"
+    >
+      <option value="espresso" checked>Espresso 3$</option>
+      <option value="lattes">Lattes 5$</option>
+      <option value="macchiatos">Macchiatos 7$</option>
+      <option value="americanos">Americanos 4$</option>
+    </select>
+
+    <label for="quantity1">Enter quantity</label>
+    <p style="color: gray;">Not less than 1 not more than 20.</p>
+    <input
+      required
+      type="number"
+      cam-variable-name="quantity1"
+      cam-variable-type="Double"
+      min="1"
+      max="20"
+      class="form-control"
+      style="width: 400px;"
+    />
+  </div>
+  <hr>
+  <div style="border: 2px solid green; padding: 10px; border-radius: 10px;">
+    <label for="coffee2">Choose second type of coffee:</label>
+    <select
+      required
+      cam-variable-name="coffee2"
+      cam-variable-type="String"
+      class="form-control"
+    >
+      <option value="espresso" checked>Espresso 3$</option>
+      <option value="lattes">Lattes 5$</option>
+      <option value="macchiatos">Macchiatos 7$</option>
+      <option value="americanos">Americanos 4$</option>
+    </select>
+
+    <label for="quantity2">Enter quantity:</label>
+    <p style="color: gray;">Not less than 1 not more than 20.</p>
+    <input
+      required
+      type="number"
+      cam-variable-name="quantity2"
+      cam-variable-type="Double"
+      min="1"
+      max="20"
+      class="form-control"
+      style="width: 400px;"
+    />
+  </div>
+    <br />
+
+    <label for="date">Enter date of delivery: </label>
+    <input
+      required
+      type="date"
+      cam-variable-name="date"
+      cam-variable-type="String"
+    />
+
+    <br />
+    <label for="comments">Your comments:</label>
+    <textarea
+      cam-variable-name="comments"
+      cam-variable-type="String"
+      rows="6"
+      class="form-control"
+      placeholder="Send your comments"
+    ></textarea>
+  </div>
+</form>

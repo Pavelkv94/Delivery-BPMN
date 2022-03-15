@@ -1,0 +1,26 @@
+<form role="form" name="form" xmlns="http://www.w3.org/1999/html">
+  <script cam-script type="text/form-script">
+      camForm.on('form-loaded', function() {
+          camForm.variableManager.fetchVariable('invoice');
+      });
+      camForm.on('variables-fetched', function() {
+          $scope.invoice = camForm.variableManager.variable('invoice').value;
+      });
+  </script>
+
+  <h1 style="color: green;">Amount For payment: {{invoice}} $.</h1>
+
+  <div style="border: 2px solid gray; padding: 10px; border-radius: 10px; width: 400px;">
+    <label for="onlinePay">Online Payment:</label>
+    <br>
+    <input
+      type="checkbox"
+      cam-variable-name="onlinePay"
+      cam-variable-type="Boolean"
+    />
+    I will pay online
+    <br>
+    <p style="font-size: 16px; color: gray;">By default, you pay cash on delivery</p>
+  </div>
+    <br />
+<form>

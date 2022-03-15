@@ -1,0 +1,23 @@
+<form role="form" name="form">
+ 
+  <script cam-script type="text/form-script">
+    camForm.on('form-loaded', function() {
+        camForm.variableManager.fetchVariable('name');
+    });
+    camForm.on('variables-fetched', function() {
+        $scope.name = camForm.variableManager.variable('name').value;
+    });
+</script>
+
+    <br />
+  <h4>Subject: <b style="color: coral;">{{name}}</b></h4>
+    <label for="textLetter">Text for letter:</label>
+       <textarea
+      required
+      cam-variable-name="textLetter"
+      cam-variable-type="String"
+      rows="4"
+      class="form-control"
+    >Hello!!! Your order has been processed. Have a good day!</textarea>
+  </div>
+</form>

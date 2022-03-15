@@ -1,0 +1,25 @@
+<form role="form" name="form">
+
+  <script cam-script type="text/form-script">
+    camForm.on('form-loaded', function() {
+        camForm.variableManager.fetchVariable('noCoffee');
+    });
+    camForm.on('variables-fetched', function() {
+        $scope.noCoffee = camForm.variableManager.variable('noCoffee').value;
+    });
+</script>
+  <h2 style="color: coral;">You need buy this coffee: <b style="color: blueviolet;">{{noCoffee}}</b></h2>
+
+  <div style="border: 2px solid rgb(42, 132, 206); padding: 10px; border-radius: 10px; width: 400px;">
+    <label for="orderCoffee">Order this coffee:</label>
+    <br>
+    <input
+      required
+      type="checkbox"
+      cam-variable-name="orderCoffee"
+      cam-variable-type="Boolean"
+    />
+    Send car
+    <br>
+  </div>
+</form>
