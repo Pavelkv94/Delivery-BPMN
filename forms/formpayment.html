@@ -1,26 +1,128 @@
-<form role="form" name="form" xmlns="http://www.w3.org/1999/html">
-  <script cam-script type="text/form-script">
-      camForm.on('form-loaded', function() {
-          camForm.variableManager.fetchVariable('invoice');
-      });
-      camForm.on('variables-fetched', function() {
-          $scope.invoice = camForm.variableManager.variable('invoice').value;
-      });
+<form class="form-horizontal">
+  <div id="reactContainer" />
+
+  <script cam-script type="text/javascript">
+    // Fetch Variables and create new ones
+    camForm.on("form-loaded", function () {
+      camForm.variableManager.fetchVariable("invoice");
+    });
+    camForm.on("variables-fetched", function () {
+      $scope.invoice = camForm.variableManager.variable("invoice").value;
+    });
+
+    camForm.on("variables-applied", function () {
+      renderReactForm();
+    });
+
+    // Render React here
+    function renderReactForm() {
+      const container = document.getElementById("reactContainer");
+
+      const e = React.createElement;
+
+      class InputGroup extends React.Component {
+        render() {
+          return e("div", { className: "form-group" }, [
+            e(
+              "label",
+              { className: "control-label col-md-4", key: "label" },
+              this.props.label
+            ),
+            e(
+              "div",
+              { className: "col-md-6", key: "input field" },
+              this.props.children
+            ),
+          ]);
+        }
+      }
+
+      class MainForm extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            invoice: this.props.invoice.value,
+            onlinePay: false,
+          };
+          this.handleInputChange = this.handleInputChange.bind(this);
+
+          camForm.on("submit", (evt) => {
+            this.handleSubmit(evt);
+          });
+        }
+
+        handleInputChange(event) {
+          const value = event.target.checked;
+          const name = event.target.name;
+
+          this.setState({
+            [name]: value,
+          });
+        }
+
+        handleSubmit(event) {
+          camForm.variableManager.createVariable({
+            name: "onlinePay",
+            type: "Boolean",
+            value: this.state.onlinePay,
+            isDirty: true,
+          });
+        }
+
+        render() {
+          return e("div", null, [
+            e("br", { key: "br1" }),
+            e(
+              "h2",
+              { style: { color: "green" } },
+              `Amount For payment: ${this.state.invoice}$.`
+            ),
+            e(
+              "div",
+              {
+                style: {
+                  border: "2px solid gray",
+                  padding: "10px",
+                  borderRadius: "10px",
+                  width: '500px'
+                },
+              },
+
+              e(
+                InputGroup,
+                { label: "Online Payment:", key: "onlinePay" },
+                e("div", {style: {display: 'flex'}}, [
+                  e("input", {
+                    className: "form-control",
+                    name: "onlinePay",
+                    type: "checkbox",
+                    onChange: this.handleInputChange,
+                    checked: this.state.onlinePay,
+                  }),
+                  e(
+                    "p",
+                    { style: { marginLeft: '14px' } },
+                    "I will pay online"
+                  ),
+                ]),
+                e(
+                    "p",
+                    {
+                      style: { color: "gray" }
+                    },
+                    "By default, you pay cash on delivery"
+                  ),
+              )
+            ),
+            e("hr", { key: "hr3" }),
+          ]);
+        }
+      }
+
+      ReactDOM.render(
+        e(MainForm, camForm.variableManager.variables),
+        container
+      );
+    }
   </script>
-
-  <h1 style="color: green;">Amount For payment: {{invoice}} $.</h1>
-
-  <div style="border: 2px solid gray; padding: 10px; border-radius: 10px; width: 400px;">
-    <label for="onlinePay">Online Payment:</label>
-    <br>
-    <input
-      type="checkbox"
-      cam-variable-name="onlinePay"
-      cam-variable-type="Boolean"
-    />
-    I will pay online
-    <br>
-    <p style="font-size: 16px; color: gray;">By default, you pay cash on delivery</p>
-  </div>
-    <br />
-<form>
+</form>

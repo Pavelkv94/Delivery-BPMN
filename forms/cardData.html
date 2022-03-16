@@ -1,37 +1,174 @@
-<form role="form" name="form" xmlns="http://www.w3.org/1999/html">
-  <script cam-script type="text/form-script">
-    camForm.on('form-loaded', function() {
-        camForm.variableManager.fetchVariable('invoice');
+<form class="form-horizontal">
+  <div id="reactContainer" />
+
+  <script cam-script type="text/javascript">
+    // Fetch Variables and create new ones
+    camForm.on("form-loaded", function () {
+      camForm.variableManager.fetchVariable("invoice");
     });
-    camForm.on('variables-fetched', function() {
-        $scope.invoice = camForm.variableManager.variable('invoice').value;
+    camForm.on("variables-fetched", function () {
+      $scope.invoice = camForm.variableManager.variable("invoice").value;
     });
+
+    camForm.on("variables-applied", function () {
+      renderReactForm();
+    });
+
+    // Render React here
+    function renderReactForm() {
+      const container = document.getElementById("reactContainer");
+
+      const e = React.createElement;
+
+      class InputGroup extends React.Component {
+        render() {
+          return e("div", { className: "form-group" }, [
+            e(
+              "label",
+              { className: "control-label col-md-2", key: "label" },
+              this.props.label
+            ),
+            e(
+              "div",
+              { className: "col-md-6", key: "input field" },
+              this.props.children
+            ),
+          ]);
+        }
+      }
+
+      class MainForm extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            invoice: this.props.invoice.value,
+            cardNumber: "",
+            validationErrors: {},
+          };
+          this.handleInputChange = this.handleInputChange.bind(this);
+
+          camForm.on("submit", (evt) => {
+            this.handleSubmit(evt);
+          });
+        }
+
+        handleInputChange(event) {
+          const value = event.target.value;
+          const name = event.target.name;
+
+          this.setState({
+            [name]: value,
+          });
+
+          this.validate(name, value);
+        }
+
+        handleSubmit(event) {
+          camForm.variableManager.createVariable({
+            name: "cardNumber",
+            type: "String",
+            value: this.state.cardNumber,
+            isDirty: true,
+          });
+        }
+
+        validate(name, value) {
+          const inputRequiredValue = "Should be no more 16 digits";
+
+          let errors = this.state.validationErrors;
+          if (value.length > 16 && name === "cardNumber") {
+            errors[name] = inputRequiredValue;
+          } else {
+            delete errors[name];
+          }
+
+          // validation
+          this.setState({ validationErrors: errors });
+        }
+
+        checkRequiredValues() {
+          var isValid = true;
+
+          if (!!(this.state.cardNumber === "")) return false;
+          return isValid;
+        }
+
+        render() {
+          return e("div", null, [
+            e("br", { key: "br1" }),
+            e("h2", { style: { color: "orange" } }, `Payment Data:`),
+            e(
+              "div",
+              {},
+              e(
+                InputGroup,
+                { label: "Digits of card:", key: "cardNumberlabel" },
+                e("div", {}, [
+                  e("input", {
+                    className: "form-control",
+                    name: "cardNumber",
+                    type: "text",
+                    placeholder: "8888-8888-8888-8888",
+                    onChange: this.handleInputChange,
+                    value: this.state.cardNumber,
+                  }),
+                  e(
+                    "span",
+                    {
+                      style: {
+                        display: "flex",
+                        justifyContent: "space-between",
+                      },
+                    },
+                    [
+                      e(
+                        "p",
+                        {
+                          style: { color: "gray" },
+                        },
+                        "Must be 16 digits"
+                      ),
+                      e(
+                        "p",
+                        {
+                          style: {
+                            color: "red",
+                            textAlign: "center",
+                            fontSize: "16px",
+                          },
+                        },
+                        this.state.validationErrors.cardNumber
+                      ),
+                    ]
+                  ),
+                ])
+              )
+            ),
+            e("hr", { key: "hr" }),
+            e("h4", {}, "Finally sum:"),
+            e(
+              "div",
+              {
+                style: {
+                  width: "100px",
+                  borderRadius: "5px",
+                  border: "1px solid gray",
+                  fontSize: "20px",
+                  color: "red",
+                  padding: "10px",
+                  textAlign: "center",
+                },
+              },
+              ` ${this.state.invoice}$`
+            ),
+          ]);
+        }
+      }
+
+      ReactDOM.render(
+        e(MainForm, camForm.variableManager.variables),
+        container
+      );
+    }
   </script>
-
-  <h1 style="color: rgb(255, 187, 0)">Payment Data</h1>
-
-  <label for="cardNumber">Digits of card</label>
-  <input
-    required
-    type="number"
-    cam-variable-name="cardNumber"
-    cam-variable-type="Double"
-    minlength="16"
-    class="form-control"
-    placeholder="8888-8888-8888-8888"
-  />
-  <p style="font-size: 16px; color: gray;">Must be 16 digits</p>
-  <hr />
-  <label for="cost" >Finally sum:</label>
-  <span
-    style="
-      width: 400px;
-      border-radius: 5px;
-      border: 1px solid gray;
-      font-size: 20px;
-      color: red;
-      padding: 10px;
-    "
-    >{{invoice}} $</span
-  >
 </form>

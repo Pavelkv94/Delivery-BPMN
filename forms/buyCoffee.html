@@ -1,25 +1,136 @@
-<form role="form" name="form">
+<form class="form-horizontal">
+  <div id="reactContainer" />
 
-  <script cam-script type="text/form-script">
-    camForm.on('form-loaded', function() {
-        camForm.variableManager.fetchVariable('noCoffee');
+  <script cam-script type="text/javascript">
+    // Fetch Variables and create new ones
+    camForm.on("form-loaded", function () {
+      camForm.variableManager.fetchVariable("noCoffee");
     });
-    camForm.on('variables-fetched', function() {
-        $scope.noCoffee = camForm.variableManager.variable('noCoffee').value;
+    camForm.on("variables-fetched", function () {
+      $scope.noCoffee = camForm.variableManager.variable("noCoffee").value;
     });
-</script>
-  <h2 style="color: coral;">You need buy this coffee: <b style="color: blueviolet;">{{noCoffee}}</b></h2>
 
-  <div style="border: 2px solid rgb(42, 132, 206); padding: 10px; border-radius: 10px; width: 400px;">
-    <label for="orderCoffee">Order this coffee:</label>
-    <br>
-    <input
-      required
-      type="checkbox"
-      cam-variable-name="orderCoffee"
-      cam-variable-type="Boolean"
-    />
-    Send car
-    <br>
-  </div>
+    camForm.on("variables-applied", function () {
+      renderReactForm();
+    });
+
+    // Render React here
+    function renderReactForm() {
+      const container = document.getElementById("reactContainer");
+
+      const e = React.createElement;
+
+      class InputGroup extends React.Component {
+        render() {
+          return e("div", { className: "form-group" }, [
+            e(
+              "label",
+              { className: "control-label col-md-6", key: "label" },
+              this.props.label
+            ),
+            e(
+              "div",
+              { className: "col-md-6", key: "input field" },
+              this.props.children
+            ),
+          ]);
+        }
+      }
+
+      class MainForm extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            noCoffee: this.props.noCoffee.value,
+            sendCar: false,
+          };
+          this.handleInputChange = this.handleInputChange.bind(this);
+
+          camForm.on("submit", (evt) => {
+            this.handleSubmit(evt);
+          });
+        }
+
+        handleInputChange(event) {
+          const value = event.target.checked;
+          const name = event.target.name;
+
+          this.setState({
+            [name]: value,
+          });
+        }
+
+        handleSubmit(event) {
+          camForm.variableManager.createVariable({
+            name: "sendCar",
+            type: "Boolean",
+            value: this.state.sendCar,
+            isDirty: true,
+          });
+        }
+
+        render() {
+          return e("div", null, [
+            e("br", { key: "br1" }),
+            e('span', {style: {display: 'flex'}},[
+            e(
+              "h2",
+              { style: { color: "coral" } },
+              'You need buy this coffee: '
+            ), 
+             e(
+              "h2",
+              { style: { color: "blueviolet" } },
+              this.state.noCoffee
+            ),
+            ]),
+            e(
+              "div",
+              {
+                style: {
+                  border: '2px solid rgb(42, 132, 206)',
+                   padding: '10px',
+                   borderRadius: '10px',
+                   width: '400px'
+
+                },
+              },
+
+              e(
+                InputGroup,
+                { label: "Order this coffee:", key: "sendCar" },
+                e("div", {style: {display: 'flex'}}, [
+                  e("input", {
+                    className: "form-control",
+                    name: "sendCar",
+                    type: "checkbox",
+                    onChange: this.handleInputChange,
+                    checked: this.state.sendCar,
+                  }),
+                  e(
+                    "p",
+                    { style: { marginLeft: '14px' } },
+                    "Send car"
+                  ),
+                ]),
+                e(
+                    "p",
+                    {
+                      style: { color: "gray" }
+                    },
+                    "Get more Coffee!"
+                  ),
+              )
+            ),
+            e("hr", { key: "hr3" }),
+          ]);
+        }
+      }
+
+      ReactDOM.render(
+        e(MainForm, camForm.variableManager.variables),
+        container
+      );
+    }
+  </script>
 </form>

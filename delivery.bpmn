@@ -117,7 +117,7 @@
     <bpmn:boundaryEvent id="Event_16r7x4d" name="Delivery Date" attachedToRef="Activity_053txdx">
       <bpmn:outgoing>Flow_0ogx1mm</bpmn:outgoing>
       <bpmn:timerEventDefinition id="TimerEventDefinition_0utlvoo">
-        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT20S</bpmn:timeDuration>
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT1M</bpmn:timeDuration>
       </bpmn:timerEventDefinition>
     </bpmn:boundaryEvent>
     <bpmn:sequenceFlow id="Flow_17fwif9" sourceRef="Activity_02zptaq" targetRef="Activity_08ttwse" />

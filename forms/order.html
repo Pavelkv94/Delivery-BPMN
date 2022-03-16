@@ -1,78 +1,398 @@
-<form role="form" name="form">
-  <div class="form-group">
-    <div style="border: 2px solid green; padding: 10px; border-radius: 10px;">
-    <label for="coffee1">Choose first type of coffee:</label>
-    <select
-      required
-      cam-variable-name="coffee1"
-      cam-variable-type="String"
-      class="form-control"
-    >
-      <option value="espresso" checked>Espresso 3$</option>
-      <option value="lattes">Lattes 5$</option>
-      <option value="macchiatos">Macchiatos 7$</option>
-      <option value="americanos">Americanos 4$</option>
-    </select>
+<form class="form-horizontal">
+  <div id="reactContainer" />
 
-    <label for="quantity1">Enter quantity</label>
-    <p style="color: gray;">Not less than 1 not more than 20.</p>
-    <input
-      required
-      type="number"
-      cam-variable-name="quantity1"
-      cam-variable-type="Double"
-      min="1"
-      max="20"
-      class="form-control"
-      style="width: 400px;"
-    />
-  </div>
-  <hr>
-  <div style="border: 2px solid green; padding: 10px; border-radius: 10px;">
-    <label for="coffee2">Choose second type of coffee:</label>
-    <select
-      required
-      cam-variable-name="coffee2"
-      cam-variable-type="String"
-      class="form-control"
-    >
-      <option value="espresso" checked>Espresso 3$</option>
-      <option value="lattes">Lattes 5$</option>
-      <option value="macchiatos">Macchiatos 7$</option>
-      <option value="americanos">Americanos 4$</option>
-    </select>
+  <script cam-script type="text/javascript">
+    // Fetch Variables and create new ones
+    camForm.on("form-loaded", function () {
+      camForm.variableManager.fetchVariable("clientName");
+    });
+    camForm.on("variables-fetched", function () {
+      $scope.clientName = camForm.variableManager.variable("clientName").value;
+    });
 
-    <label for="quantity2">Enter quantity:</label>
-    <p style="color: gray;">Not less than 1 not more than 20.</p>
-    <input
-      required
-      type="number"
-      cam-variable-name="quantity2"
-      cam-variable-type="Double"
-      min="1"
-      max="20"
-      class="form-control"
-      style="width: 400px;"
-    />
-  </div>
-    <br />
+    camForm.on("variables-applied", function () {
+      renderReactForm();
+    });
 
-    <label for="date">Enter date of delivery: </label>
-    <input
-      required
-      type="date"
-      cam-variable-name="date"
-      cam-variable-type="String"
-    />
+    // Render React here
+    function renderReactForm() {
+      const container = document.getElementById("reactContainer");
 
-    <br />
-    <label for="comments">Your comments:</label>
-    <textarea
-      cam-variable-name="comments"
-      cam-variable-type="String"
-      rows="6"
-      class="form-control"
-      placeholder="Send your comments"
-    ></textarea>
-  </div>
+      const e = React.createElement;
+
+      class InputGroup extends React.Component {
+        render() {
+          return e("div", { className: "form-group" }, [
+            e(
+              "label",
+              { className: "control-label col-md-4", key: "label" },
+              this.props.label
+            ),
+            e(
+              "div",
+              { className: "col-md-6", key: "input field" },
+              this.props.children
+            ),
+          ]);
+        }
+      }
+
+      class MainForm extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            clientName: this.props.clientName.value,
+            coffee1: "espresso",
+            coffee2: "espresso",
+            quantity1: 0,
+            quantity2: 0,
+            date: "",
+            comments: "",
+            validationErrors: {}
+          };
+          this.handleInputChange = this.handleInputChange.bind(this);
+
+          camForm.on("submit", (evt) => {
+            this.handleSubmit(evt);
+          });
+        }
+
+        handleInputChange(event) {
+          const value = event.target.value;
+          const name = event.target.name;
+
+          this.setState({
+            [name]: value,
+          });
+
+          this.validate(name, value);
+        }
+
+        handleSubmit(event) {
+          camForm.variableManager.createVariable({
+            name: "coffee1",
+            type: "String",
+            value: this.state.coffee1,
+            isDirty: true,
+          });
+
+          camForm.variableManager.createVariable({
+            name: "coffee2",
+            type: "String",
+            value: this.state.coffee2,
+            isDirty: true,
+          });
+
+          camForm.variableManager.createVariable({
+            name: "quantity1",
+            type: "Double",
+            value: this.state.quantity1,
+            isDirty: true,
+          });
+
+          camForm.variableManager.createVariable({
+            name: "quantity2",
+            type: "Double",
+            value: this.state.quantity2,
+            isDirty: true,
+          });
+
+          camForm.variableManager.createVariable({
+            name: "date",
+            type: "String",
+            value: this.state.date,
+            isDirty: true,
+          });
+
+          camForm.variableManager.createVariable({
+            name: "comments",
+            type: "String",
+            value: this.state.comments,
+            isDirty: true,
+          });
+        }
+
+        validate(name, value) {
+          const inputRequiredValue = "Field value is required";
+
+          let errors = this.state.validationErrors;
+          if (
+            !!(value === "") &&
+            (name === "quantity1" || name === "quantity2")
+          ) {
+            errors[name] = inputRequiredValue;
+          } else if (
+            +value > 20 &&
+            (name === "quantity1" || name === "quantity2")
+          ) {
+            errors[name] = "Max quantity should be 20";
+          } else if (value === "" && name === "date") {
+            errors[name] = "You must choose Delivery Date";
+          } else {
+            delete errors[name];
+          }
+
+          // validation
+          this.setState({ validationErrors: errors });
+        }
+
+        checkRequiredValues() {
+          var isValid = true;
+
+          if (!!(this.state.quantity1 === "")) return false;
+          if (!!(this.state.quantity2 === "")) return false;
+          if (!!(this.state.date === "")) return false;
+
+          return isValid;
+        }
+
+        render() {
+          return e("div", null, [
+            e("br", { key: "br1" }),
+            e("span", { style: { display: "flex" } }, [
+              e("h2", { style: { color: "green" } }, `Hello `),
+              e(
+                "h2",
+                { style: { color: "red", fontWeight: "600" } },
+                `${this.state.clientName.toUpperCase()}`
+              ),
+              e(
+                "h2",
+                { style: { color: "green" } },
+                ` ! Let's create your order!`
+              ),
+            ]),
+            e(
+              "div",
+              {
+                style: {
+                  border: "2px solid green",
+                  padding: "10px",
+                  borderRadius: "10px",
+                },
+              },
+              e(
+                InputGroup,
+                { label: "Choose first type of Coffee: ", key: "Category" },
+                e(
+                  "select",
+                  {
+                    className: "form-control",
+                    name: "coffee1",
+                    value: this.state.coffee1,
+                    onChange: this.handleInputChange,
+                  },
+                  [
+                    e(
+                      "option",
+                      { value: "espresso", key: "espresso" },
+                      "Espresso 3$"
+                    ),
+                    e(
+                      "option",
+                      { value: "lattes", key: "lattes" },
+                      "Lattes 5$"
+                    ),
+                    e(
+                      "option",
+                      { value: "macchiatos", key: "macchiatos" },
+                      "Macchiatos 7$"
+                    ),
+                    e(
+                      "option",
+                      { value: "americanos", key: "americanos" },
+                      "Americanos 4$"
+                    ),
+                  ]
+                )
+              ),
+              e(
+                InputGroup,
+                { label: "Enter quantity: ", key: "quantity1" },
+                e("div", {}, [
+                  e("input", {
+                    className: "form-control",
+                    name: "quantity1",
+                    type: "number",
+                    onChange: this.handleInputChange,
+                    value: this.state.quantity1,
+                  }),
+                  e(
+                    "span",
+                    {
+                      style: {
+                        display: "flex",
+                        justifyContent: "space-between",
+                      },
+                    },
+                    [
+                      e(
+                        "p",
+                        {
+                          style: { color: "gray" },
+                        },
+                        "Not less than 1 not more than 20."
+                      ),
+                      e(
+                        "p",
+                        {
+                          style: {
+                            color: "red",
+                            textAlign: "center",
+                            fontSize: "16px",
+                          },
+                        },
+                        this.state.validationErrors.quantity1
+                      ),
+                    ]
+                  ),
+                ])
+              )
+            ),
+            e("br", { key: "br4" }),
+            e(
+              "div",
+              {
+                style: {
+                  border: "2px solid green",
+                  padding: "10px",
+                  borderRadius: "10px",
+                },
+              },
+              e(
+                InputGroup,
+                { label: "Choose second type of Coffee: ", key: "Category2" },
+                e(
+                  "select",
+                  {
+                    className: "form-control",
+                    name: "coffee2",
+                    value: this.state.coffee2,
+                    onChange: this.handleInputChange,
+                  },
+                  [
+                    e(
+                      "option",
+                      { value: "espresso", key: "espresso" },
+                      "Espresso 3$"
+                    ),
+                    e(
+                      "option",
+                      { value: "lattes", key: "lattes" },
+                      "Lattes 5$"
+                    ),
+                    e(
+                      "option",
+                      { value: "macchiatos", key: "macchiatos" },
+                      "Macchiatos 7$"
+                    ),
+                    e(
+                      "option",
+                      { value: "americanos", key: "americanos" },
+                      "Americanos 4$"
+                    ),
+                  ]
+                )
+              ),
+              e(
+                InputGroup,
+                {
+                  label: "Enter quantity: ",
+
+                  key: "quantity2",
+                },
+                e("div", {}, [
+                  e("input", {
+                    className: "form-control",
+                    name: "quantity2",
+                    type: "number",
+                    onChange: this.handleInputChange,
+                    value: this.state.quantity2,
+                  }),
+                  e(
+                    "span",
+                    {
+                      style: {
+                        display: "flex",
+                        justifyContent: "space-between",
+                      },
+                    },
+                    [
+                      e(
+                        "p",
+                        {
+                          style: { color: "gray" },
+                        },
+                        "Not less than 1 not more than 20."
+                      ),
+                      e(
+                        "p",
+                        {
+                          style: {
+                            color: "red",
+                            textAlign: "center",
+                            fontSize: "16px",
+                          },
+                        },
+                        this.state.validationErrors.quantity2
+                      ),
+                    ]
+                  ),
+                ])
+              )
+            ),
+            e("hr", { key: "hr3" }),
+            e(
+              "div",
+              {
+                style: {
+                  border: "2px solid aqua",
+                  padding: "10px",
+                  borderRadius: "5px",
+                },
+              },
+              e(
+                InputGroup,
+                { label: "Enter date of delivery: ", key: "date" },
+                e("input", {
+                  className: "form-control",
+                  name: "date",
+                  type: "date",
+                  onChange: this.handleInputChange,
+                  value: this.state.date,
+                })
+              ),
+              e(
+                "p",
+                {
+                  style: {
+                    color: "red",
+                    textAlign: "center",
+                    fontSize: "16px",
+                  },
+                },
+                this.state.validationErrors.date
+              ),
+              e(
+                InputGroup,
+                { label: "Your comments:", key: "comments" },
+                e("textarea", {
+                  className: "form-control",
+                  name: "comments",
+                  type: "text",
+                  onChange: this.handleInputChange,
+                  value: this.state.comments,
+                })
+              )
+            ),
+          ]);
+        }
+      }
+
+      ReactDOM.render(
+        e(MainForm, camForm.variableManager.variables),
+        container
+      );
+    }
+  </script>
 </form>

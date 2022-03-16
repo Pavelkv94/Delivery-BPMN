@@ -1,11 +1,121 @@
+<form class="form-horizontal">
+  <div id="reactContainer" />
 
+  <script cam-script type="text/javascript">
+    const container = document.getElementById("reactContainer");
 
-<form role="form" name="form" xmlns="http://www.w3.org/1999/html">
-    <label for="name">Your name: </label>
-    <input
-      required
-      cam-variable-name="name"
-      cam-variable-type="String"
-      class="form-control"
-    />
-  <form>
+    const e = React.createElement;
+
+    class InputGroup extends React.Component {
+      render() {
+        return e("div", { className: "form-group" }, [
+          e(
+            "label",
+            { className: "control-label col-md-4", key: "label" },
+            this.props.label
+          ),
+          e("div", { className: "col-md-6", key: "input field" }, [
+            this.props.children,
+            e(
+              "div",
+              { className: "help-block", key: "help label" },
+              this.props.helpText
+            ),
+          ]),
+        ]);
+      }
+    }
+
+    class StartForm extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          clientName: "",
+          validationErrors: {},
+        };
+
+        this.handleInputChange = this.handleInputChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        // Register submit
+        camForm.on("submit", (evt) => {
+          this.handleSubmit(evt);
+        });
+      }
+
+      handleInputChange(event) {
+        const value = event.target.value;
+        const name = event.target.name;
+
+        this.setState({
+          [name]: value,
+        });
+
+        this.validate(name, value);
+      }
+
+      handleSubmit(event) {
+        camForm.variableManager.createVariable({
+          name: "clientName",
+          type: "String",
+          value: this.state.clientName,
+          isDirty: true,
+        });
+      }
+
+      validate(name, value) {
+        const inputRequiredValue = "Field is required";
+
+        let errors = this.state.validationErrors;
+        if (!!(value === "") && name === "clientName") {
+          errors[name] = inputRequiredValue;
+        } else {
+          delete errors[name];
+        }
+
+        // validation
+        this.setState({ validationErrors: errors });
+      }
+
+      checkRequiredValues() {
+        var isValid = true;
+
+        if (!!(this.state.clientName === "")) return false;
+
+        return isValid;
+      }
+
+      render() {
+        return e("div", { className: "form-group" }, [
+          e(
+            InputGroup,
+            {
+              label: "Your Name: ",
+              helpText: "You first Name, please",
+              key: "clientName",
+            },
+            e("input", {
+              className: "form-control",
+              name: "clientName",
+              type: "text",
+              onChange: this.handleInputChange,
+              value: this.state.clientName,
+            }),
+            e(
+              "p",
+              {
+                style: {
+                  color: "red",
+                  textAlign: "center",
+                  fontSize: "16px",
+                },
+              },
+              this.state.validationErrors.clientName
+            )
+          ),
+        ]);
+      }
+    }
+
+    ReactDOM.render(e(StartForm, camForm.variableManager.variables), container);
+  </script>
+</form>

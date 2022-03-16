@@ -1,23 +1,121 @@
-<form role="form" name="form">
- 
-  <script cam-script type="text/form-script">
-    camForm.on('form-loaded', function() {
-        camForm.variableManager.fetchVariable('name');
-    });
-    camForm.on('variables-fetched', function() {
-        $scope.name = camForm.variableManager.variable('name').value;
-    });
-</script>
+<form class="form-horizontal">
+  <div id="reactContainer" />
 
-    <br />
-  <h4>Subject: <b style="color: coral;">{{name}}</b></h4>
-    <label for="textLetter">Text for letter:</label>
-       <textarea
-      required
-      cam-variable-name="textLetter"
-      cam-variable-type="String"
-      rows="4"
-      class="form-control"
-    >Hello!!! Your order has been processed. Have a good day!</textarea>
-  </div>
+  <script cam-script type="text/javascript">
+    // Fetch Variables and create new ones
+    camForm.on("form-loaded", function () {
+      camForm.variableManager.fetchVariable("clientName");
+    });
+    camForm.on("variables-fetched", function () {
+      $scope.clientName = camForm.variableManager.variable("clientName").value;
+    });
+
+    camForm.on("variables-applied", function () {
+      renderReactForm();
+    });
+
+    // Render React here
+    function renderReactForm() {
+      const container = document.getElementById("reactContainer");
+
+      const e = React.createElement;
+
+      class InputGroup extends React.Component {
+        render() {
+          return e("div", { className: "form-group" }, [
+            e(
+              "label",
+              { className: "control-label col-md-4", key: "label" },
+              this.props.label
+            ),
+            e(
+              "div",
+              { className: "col-md-8", key: "input field" },
+              this.props.children
+            ),
+          ]);
+        }
+      }
+
+      class MainForm extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            clientName: this.props.clientName.value,
+            letter: 'Hello!!! Your order has been processed. Have a good day!',
+          };
+          this.handleInputChange = this.handleInputChange.bind(this);
+
+          camForm.on("submit", (evt) => {
+            this.handleSubmit(evt);
+          });
+        }
+
+        handleInputChange(event) {
+          const value = event.target.checked;
+          const name = event.target.name;
+
+          this.setState({
+            [name]: value,
+          });
+        }
+
+        handleSubmit(event) {
+          camForm.variableManager.createVariable({
+            name: "letter",
+            type: "String",
+            value: this.state.letter,
+            isDirty: true,
+          });
+        }
+
+        render() {
+          return e("div", null, [
+            e("br", { key: "br1" }),
+            e('span', {style: {display: 'flex'}}, [
+            e(
+              "h3",
+              {},
+             'Subject: '
+            ),
+            e(
+              "h3",
+              {style: {color: 'coral'}},
+             `${this.state.clientName}`
+            ),
+            ]),
+            e(
+              "div",
+              {
+                style: {
+                  border: "2px solid orange",
+                  padding: "10px",
+                  borderRadius: "10px",
+                  width: '800px'
+                },
+              },
+
+              e(
+              InputGroup,
+              { label: "Text for letter:", key: "letter" },
+              e("textarea", {
+                className: "form-control",
+                width: '600',
+                height: '400',
+                name: "letter",
+                type: "text",
+                onChange: this.handleInputChange,
+                value: this.state.letter,
+              }))
+            )
+          ]);
+        }
+      }
+
+      ReactDOM.render(
+        e(MainForm, camForm.variableManager.variables),
+        container
+      );
+    }
+  </script>
 </form>
